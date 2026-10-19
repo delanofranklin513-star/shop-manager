@@ -1,2 +1,2 @@
-# shop-manager
-good for best shops 
+# Supermarket Database 
+Accurate and consistent storage 
