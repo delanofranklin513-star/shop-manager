@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shop Manager Pro v2</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial}
+body{background:#0f172a;color:#e2e8f0}
+.container{max-width:1200px;margin:0 auto;padding:20px}
+.login-box{max-width:400px;margin:100px auto;background:#1e293b;padding:40px;border-radius:15px;border:2px solid #3b82f6}
+input,select,button,textarea{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#fff;font-size:15px}
+button{background:#3b82f6;border:0;font-weight:700;cursor:pointer}
+button:hover{background:#2563eb}
+button.danger{background:#ef4444}
+button.danger:hover{background:#dc2626}
+button.success{background:#22c55e}
+nav{background:#1e293b;padding:15px;margin-bottom:20px;border-bottom:2px solid #3b82f6;display:flex;gap:10px;flex-wrap:wrap}
+nav button{width:auto;padding:10px 20px}
+.tab{display:none}
+.tab.active{display:block}
+.card{background:#1e293b;padding:20px;border-radius:12px;margin:15px 0;border:1px solid #334155}
+table{width:100%;border-collapse:collapse;margin-top:15px}
+th,td{padding:12px;text-align:left;border-bottom:1px solid #334155}
+th{background:#0f172a;color:#3b82f6;position:sticky;top:0}
+tr:hover{background:#1e293b}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+@media(max-width:700px){.form-grid{grid-template-columns:1fr}}
+.badge{padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700}
+.badge.low{background:#ef4444}
+.badge.ok{background:#22c55e}
+h1,h2{color:#3b82f6;margin:15px 0}
+.search-box{display:flex;gap:10px;margin:15px 0}
+.search-box input{flex:1}
+.top-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}
+@media(max-width:900px){.top-stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<div id="login" class="container">
+<div class="login-box">
+<h1 id="shopTitle">🏪 Shop Manager Pro</h1>
+<p style="margin-bottom:20px;color:#94a3b8">Login to continue</p>
+<input type="text" id="user" placeholder="Username" value="admin">
+<input type="password" id="pass" placeholder="Password" value="admin123">
+<button onclick="login()">Login</button>
+<p style="margin-top:15px;font-size:13px;color:#94a3b8">Default: admin / admin123</p>
+</div>
+</div>
+
+<div id="app" class="container" style="display:none">
+<nav>
+<button onclick="showTab('dashboard')">📊 Dashboard</button>
+<button onclick="showTab('products')">📦 Products</button>
+<button onclick="showTab('customers')">👥 Customers</button>
+<button onclick="showTab('sales')">💰 Sales</button>
+<button onclick="showTab('settings')">⚙️ Settings</button>
+<button onclick="logout()" class="danger">Logout</button>
+</nav>
+
+<div id="dashboard" class="tab active">
+<h2>Dashboard</h2>
+<div class="top-stats">
+<div class="card"><h3>Total Products</h3><h1 id="tProducts">0</h1></div>
+<div class="card"><h3>Total Customers</h3><h1 id="tCustomers">0</h1></div>
+<div class="card"><h3>Total Sales $</h3><h1 id="tSales">0</h1></div>
+<div class="card"><h3>Low Stock</h3><h1 id="tLowStock">0</h1></div>
+</div>
+<div class="card">
+<h3>Recent Sales</h3>
+<table><thead><tr><th>Date</th><th>Customer</th><th>Product</th><th>Qty</th><th>Total</th></tr></thead><tbody id="recentSales"></tbody></table>
+</div>
+</div>
+
+<div id="products" class="tab">
+<h2>Products Management</h2>
+<div class="search-box">
+<input type="text" id="searchProd" placeholder="🔍 Search by Name or Code..." oninput="loadProducts()">
+<button onclick="clearProduct()" style="width:120px;background:#555">New</button>
+</div>
+<div class="card">
+<h3>Add/Edit Product</h3>
+<div class="form-grid">
+<input type="hidden" id="pId">
+<input type="text" id="pName" placeholder="Product Name *">
+<input type="text" id="pCode" placeholder="Product Code/SKU *">
+<input type="number" id="pPrice" placeholder="Selling Price">
+<input type="number" id="pCost" placeholder="Cost Price">
+<input type="number" id="pStock" placeholder="Stock Quantity">
+<select id="pCategory"><option>Electronics</option><option>Clothing</option><option>Food</option><option>Other</option></select>
+</div>
+<button onclick="saveProduct()">Save Product</button>
+</div>
+<table><thead><tr><th>Code</th><th>Name</th><th>Category</th><th>Price</th><th>Cost</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead><tbody id="pList"></tbody></table>
+</div>
+
+<div id="customers" class="tab">
+<h2>Customer Records</h2>
+<div class="search-box">
+<input type="text" id="searchCust" placeholder="🔍 Search by Name, Phone or Email..." oninput="loadCustomers()">
+<button onclick="clearCustomer()" style="width:120px;background:#555">New</button>
+</div>
+<div class="card">
+<h3>Add/Edit Customer</h3>
+<div class="form-grid">
+<input type="hidden" id="cId">
+<input type="text" id="cName" placeholder="Full Name *">
+<input type="tel" id="cPhone" placeholder="Phone Number *">
+<input type="email" id="cEmail" placeholder="Email">
+<input type="text" id="cAddress" placeholder="Address">
+</div>
+<button onclick="saveCustomer()">Save Customer</button>
+</div>
+<table><thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Address</th><th>Actions</th></tr></thead><tbody id="cList"></tbody></table>
+</div>
+
+<div id="sales" class="tab">
+<h2>Sales Record</h2>
+<div class="card">
+<h3>New Sale</h3>
+<div class="form-grid">
+<select id="sCustomer"></select>
+<select id="sProduct" onchange="updatePrice()"></select>
+<input type="number" id="sQty" placeholder="Quantity" value="1" min="1" oninput="updatePrice()">
+<input type="number" id="sPrice" placeholder="Unit Price" readonly>
+<input type="number" id="sTotal" placeholder="Total" readonly>
+<input type="date" id="sDate">
+</div>
+<button onclick="saveSale()" class="success">Record Sale</button>
+</div>
+<table><thead><tr><th>Date</th><th>Customer</th><th>Product</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody id="sList"></tbody></table>
+</div>
+
+<div id="settings" class="tab">
+<h2>Settings</h2>
+<div class="card">
+<h3>Shop Information</h3>
+<div class="form-grid">
+<input type="text" id="shopName" placeholder="Shop Name">
+<input type="text" id="shopPhone" placeholder="Shop Phone">
+<textarea id="shopAddress" placeholder="Shop Address"></textarea>
+</div>
+<button onclick="saveShopInfo()">Save Shop Info</button>
+</div>
+<div class="card">
+<h3>System Settings</h3>
+<div class="form-grid">
+<input type="number" id="lowStockLimit" placeholder="Low Stock Alert Limit">
+<select id="currency"><option value="$">$ USD</option><option value="FCFA">FCFA</option><option value="€">€ Euro</option></select>
+</div>
+<button onclick="saveSystemSettings()">Save Settings</button>
+</div>
+<div class="card">
+<h3>Security</h3>
+<input type="password" id="oldPass" placeholder="Old Password">
+<input type="password" id="newPass" placeholder="New Password">
+<input type="password" id="confirmPass" placeholder="Confirm Password">
+<button onclick="changePass()">Update Password</button>
+</div>
+<div class="card">
+<h3>Data Management</h3>
+<button onclick="exportHTML()" class="success">Export All Data as HTML Table</button>
+<button onclick="exportCSV()">Export Sales as CSV</button>
+<button onclick="clearAllData()" class="danger">Delete All Data</button>
+</div>
+</div>
+</div>
+
+<script>
+let db = JSON.parse(localStorage.getItem('shopDB')) || {
+users: [{u:'admin', p:'admin123'}],
+shop: {name:'My Shop', phone:'', address:'', currency:'$', lowStock:10},
+products: [], customers: [], sales: []
+};
+let currentUser = null;
+
+function saveDB(){localStorage.setItem('shopDB', JSON.stringify(db));}
+
+function login(){
+let u=user.value, p=pass.value;
+let userFound = db.users.find(x=>x.u==u && x.p==p);
+if(userFound){
+currentUser=u;
+document.getElementById('login').style.display='none';
+document.getElementById('app').style.display='block';
+shopTitle.textContent='🏪 '+db.shop.name;
+loadAll();
+}else alert('Wrong username or password!');
+}
+
+function logout(){currentUser=null; document.getElementById('app').style.display='none'; document.getElementById('login').style.display='block'; user.value=''; pass.value='';}
+
+function showTab(id){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); document.getElementById(id).classList.add('active'); if(id=='dashboard')loadDashboard(); if(id=='sales'){loadDropdowns(); sDate.value=new Date().toISOString().split('T')[0];} if(id=='settings')loadShopSettings();}
+
+// PRODUCTS with SEARCH
+function saveProduct(){
+let id=pId.value||Date.now();
+let p={id:id, name:pName.value.trim(), code:pCode.value.trim(), price:+pPrice.value||0, cost:+pCost.value||0, stock:+pStock.value||0, cat:pCategory.value};
+if(!p.name||!p.code){alert('Name and Code required!'); return;}
+let idx=db.products.findIndex(x=>x.id==id);
+if(idx>=0)db.products[idx]=p; else db.products.push(p);
+saveDB(); loadProducts(); clearProduct(); loadDropdowns();
+}
+
+function loadProducts(){
+let search=searchProd.value.toLowerCase();
+let filtered=db.products.filter(p=>p.name.toLowerCase().includes(search)||p.code.toLowerCase().includes(search));
+pList.innerHTML=filtered.map(p=>`<tr>
+<td>${p.code}</td><td>${p.name}</td><td>${p.cat}</td><td>${db.shop.currency}${p.price}</td><td>${db.shop.currency}${p.cost}</td>
+<td>${p.stock}</td><td><span class="badge ${p.stock<db.shop.lowStock?'low':'ok'}">${p.stock<db.shop.lowStock?'Low Stock':'OK'}</span></td>
+<td><button onclick="editProduct(${p.id})" style="width:auto;padding:5px 10px">Edit</button>
+<button onclick="delProduct(${p.id})" class="danger" style="width:auto;padding:5px 10px">Delete</button></td></tr>`).join('');
+}
+
+function editProduct(id){let p=db.products.find(x=>x.id==id); pId.value=p.id; pName.value=p.name; pCode.value=p.code; pPrice.value=p.price; pCost.value=p.cost; pStock.value=p.stock; pCategory.value=p.cat;}
+function delProduct(id){if(confirm('Delete this product?')){db.products=db.products.filter(x=>x.id!=id); saveDB(); loadProducts(); loadDropdowns();}}
+function clearProduct(){pId.value=''; pName.value=''; pCode.value=''; pPrice.value=''; pCost.value=''; pStock.value='';}
+
+// CUSTOMERS with SEARCH
+function saveCustomer(){
+let id=cId.value||Date.now();
+let c={id:id, name:cName.value.trim(), phone:cPhone.value.trim(), email:cEmail.value.trim(), addr:cAddress.value.trim()};
+if(!c.name||!c.phone){alert('Name and Phone required!'); return;}
+let idx=db.customers.findIndex(x=>x.id==id);
+if(idx>=0)db.customers[idx]=c; else db.customers.push(c);
+saveDB(); loadCustomers(); clearCustomer(); loadDropdowns();
+}
+
+function loadCustomers(){
+let search=searchCust.value.toLowerCase();
+let filtered=db.customers.filter(c=>c.name.toLowerCase().includes(search)||c.phone.includes(search)||c.email.toLowerCase().includes(search));
+cList.innerHTML=filtered.map(c=>`<tr>
+<td>${c.name}</td><td>${c.phone}</td><td>${c.email}</td><td>${c.addr}</td>
+<td><button onclick="editCustomer(${c.id})" style="width:auto;padding:5px 10px">Edit</button>
+<button onclick="delCustomer(${c.id})" class="danger" style="width:auto;padding:5px 10px">Delete</button></td></tr>`).join('');
+}
+
+function editCustomer(id){let c=db.customers.find(x=>x.id==id); cId.value=c.id; cName.value=c.name; cPhone.value=c.phone; cEmail.value=c.email; cAddress.value=c.addr;}
+function delCustomer(id){if(confirm('Delete this customer?')){db.customers=db.customers.filter(x=>x.id!=id); saveDB(); loadCustomers(); loadDropdowns();}}
+function clearCustomer(){cId.value=''; cName.value=''; cPhone.value=''; cEmail.value=''; cAddress.value='';}
+
+// SALES
+function loadDropdowns(){
+sCustomer.innerHTML=db.customers.map(c=>`<option value="${c.id}">${c.name} - ${c.phone}</option>`).join('');
+sProduct.innerHTML=db.products.map(p=>`<option value="${p.id}">${p.name} - ${db.shop.currency}${p.price} - Stock:${p.stock}</option>`).join('');
+updatePrice();
+}
+
+function updatePrice(){
+let p=db.products.find(x=>x.id==+sProduct.value);
+if(p){sPrice.value=p.price; sTotal.value=p.price*sQty.value;}
+}
+
+function saveSale(){
+let p=db.products.find(x=>x.id==+sProduct.value);
+if(!p){alert('Select product'); return;}
+if(sQty.value<1){alert('Quantity must be 1 or more'); return;}
+if(p.stock<sQty.value){alert('Not enough stock! Available: '+p.stock); return;}
+let sale={id:Date.now(), cid:+sCustomer.value, pid:+sProduct.value, qty:+sQty.value, price:p.price, total:p.price*sQty.value, date:sDate.value};
+db.sales.push(sale);
+p.stock-=sQty.value;
+saveDB(); loadSales(); loadProducts(); loadDashboard(); loadDropdowns();
+alert('Sale recorded successfully!');
+}
+
+function loadSales(){
+sList.innerHTML=db.sales.slice().reverse().map(s=>{
+let c=db.customers.find(x=>x.id==s.cid);
+let p=db.products.find(x=>x.id==s.pid);
+return `<tr><td>${s.date}</td><td>${c?c.name:'Deleted'}</td><td>${p?p.name:'Deleted'}</td><td>${s.qty}</td><td>${db.shop.currency}${s.price}</td><td>${db.shop.currency}${s.total}</td></tr>`;
+}).join('');
+}
+
+// DASHBOARD
+function loadDashboard(){
+tProducts.textContent=db.products.length;
+tCustomers.textContent=db.customers.length;
+tSales.textContent=db.shop.currency+db.sales.reduce((a,b)=>a+b.total,0);
+tLowStock.textContent=db.products.filter(p=>p.stock<db.shop.lowStock).length;
+recentSales.innerHTML=db.sales.slice(-5).reverse().map(s=>{
+let c=db.customers.find(x=>x.id==s.cid);
+let p=db.products.find(x=>x.id==s.pid);
+return `<tr><td>${s.date}</td><td>${c?c.name:'N/A'}</td><td>${p?p.name:'N/A'}</td><td>${s.qty}</td><td>${db.shop.currency}${s.total}</td></tr>`;
+}).join('');
+}
+
+// SETTINGS
+function loadShopSettings(){
+shopName.value=db.shop.name;
+shopPhone.value=db.shop.phone;
+shopAddress.value=db.shop.address;
+lowStockLimit.value=db.shop.lowStock;
+currency.value=db.shop.currency;
+}
+
+function saveShopInfo(){
+db.shop.name=shopName.value||'My Shop';
+db.shop.phone=shopPhone.value;
+db.shop.address=shopAddress.value;
+saveDB(); shopTitle.textContent='🏪 '+db.shop.name; alert('Shop info saved!');
+}
+
+function saveSystemSettings(){
+db.shop.lowStock=+lowStockLimit.value||10;
+db.shop.currency=currency.value;
+saveDB(); loadProducts(); loadDashboard(); alert('System settings saved!');
+}
+
+function changePass(){
+if(oldPass.value!=db.users[0].p){alert('Old password wrong!'); return;}
+if(newPass.value!=confirmPass.value){alert('Passwords don\'t match!'); return;}
+if(newPass.value.length<4){alert('Password too short!'); return;}
+db.users[0].p=newPass.value; saveDB(); alert('Password changed successfully!');
+oldPass.value=''; newPass.value=''; confirmPass.value='';
+}
+
+// EXPORT - Presentable HTML Table
+function exportHTML(){
+let html=`<!DOCTYPE html><html><head><title>${db.shop.name} - Data Export</title>
+<style>body{font-family:Arial;padding:20px;background:#f5f5f5}h1{color:#3b82f6}h2{margin-top:30px;color:#1e293b}table{width:100%;border-collapse:collapse;background:white}th,td{padding:10px;border:1px solid #ddd;text-align:left}th{background:#3b82f6;color:white}</style>
+</head><body>
+<h1>${db.shop.name}</h1>
+<p>Phone: ${db.shop.phone} | Address: ${db.shop.address}</p>
+<p>Exported on: ${new Date().toLocaleString()}</p>
+
+<h2>Products (${db.products.length})</h2>
+<table><tr><th>Code</th><th>Name</th><th>Category</th><th>Price</th><th>Cost</th><th>Stock</th></tr>
+${db.products.map(p=>`<tr><td>${p.code}</td><td>${p.name}</td><td>${p.cat}</td><td>${db.shop.currency}${p.price}</td><td>${db.shop.currency}${p.cost}</td><td>${p.stock}</td></tr>`).join('')}
+</table>
+
+<h2>Customers (${db.customers.length})</h2>
+<table><tr><th>Name</th><th>Phone</th><th>Email</th><th>Address</th></tr>
+${db.customers.map(c=>`<tr><td>${c.name}</td><td>${c.phone}</td><td>${c.email}</td><td>${c.addr}</td></tr>`).join('')}
+</table>
+
+<h2>Sales (${db.sales.length})</h2>
+<table><tr><th>Date</th><th>Customer</th><th>Product</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+${db.sales.map(s=>{
+let c=db.customers.find(x=>x.id==s.cid);
+let p=db.products.find(x=>x.id==s.pid);
+return `<tr><td>${s.date}</td><td>${c?c.name:'N/A'}</td><td>${p?p.name:'N/A'}</td><td>${s.qty}</td><td>${db.shop.currency}${s.price}</td><td>${db.shop.currency}${s.total}</td></tr>`;
+}).join('')}
+</table>
+
+<h2>Summary</h2>
+<p>Total Products: ${db.products.length}</p>
+<p>Total Customers: ${db.customers.length}</p>
+<p>Total Sales: ${db.shop.currency}${db.sales.reduce((a,b)=>a+b.total,0)}</p>
+</body></html>`;
+let blob=new Blob([html],{type:'text/html'});
+let url=URL.createObjectURL(blob);
+let a=document.createElement('a'); a.href=url; a.download=db.shop.name+'-export-'+new Date().toISOString().split('T')[0]+'.html'; a.click();
+}
+
+function exportCSV(){
+let csv='Date,Customer,Product,Qty,Price,Total\n';
+db.sales.forEach(s=>{
+let c=db.customers.find(x=>x.id==s.cid);
+let p=db.products.find(x=>x.id==s.pid);
+csv+=`${s.date},${c?c.name:'N/A'},${p?p.name:'N/A'},${s.qty},${s.price},${s.total}\n`;
+});
+let blob=new Blob([csv],{type:'text/csv'});
+let url=URL.createObjectURL(blob);
+let a=document.createElement('a'); a.href=url; a.download='sales-'+new Date().toISOString().split('T')[0]+'.csv'; a.click();
+}
+
+function clearAllData(){
+if(confirm('WARNING: DELETE ALL DATA? This cannot be undone!')){
+db={users:[{u:'admin',p:'admin123'}],shop:{name:'My Shop',phone:'',address:'',currency:'$',lowStock:10},products:[],customers:[],sales:[]};
+saveDB(); loadAll(); alert('All data cleared!');
+}}
+
+function loadAll(){loadProducts(); loadCustomers(); loadSales(); loadDashboard(); loadDropdowns(); sDate.value=new Date().toISOString().split('T')[0];}
+</script>
+</body>
+</html>
